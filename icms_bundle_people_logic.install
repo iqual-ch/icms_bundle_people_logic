@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Update hooks for ICMS People bundle.
+ */
+
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Implements hook_install().
+ *
+ * Sets the module weight to 50 to ensure deployment hooks run in the
+ * correct order after core modules.
+ */
+function icms_bundle_people_logic_install() {
+  module_set_weight('icms_bundle_people_logic', 50);
+}

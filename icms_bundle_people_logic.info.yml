@@ -1,0 +1,5 @@
+name: 'ICMS People Logic'
+type: module
+description: 'Provides deployment hooks and update functions for the ICMS People bundle.'
+package: Custom
+core_version_requirement: ^10 || ^11
