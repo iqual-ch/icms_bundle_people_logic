@@ -1,0 +1,14 @@
+appointment_button_label:
+  context: bundle_people
+  default:
+    en: 'Book an appointment'
+    de: 'Termin vereinbaren'
+    fr: 'Prendre rendez-vous'
+    it: 'Prenota un appuntamento'
+email_label:
+  context: teaser_card_people
+  default:
+    en: Email
+    de: E-Mail
+    fr: E-mail
+    it: E-mail
