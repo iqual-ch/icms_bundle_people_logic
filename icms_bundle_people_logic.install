@@ -5,7 +5,6 @@
  * Update hooks for ICMS People bundle.
  */
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\Yaml\Yaml;
 
 /**
