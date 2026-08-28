@@ -5,6 +5,10 @@
  * Update hooks for ICMS People bundle.
  */
 
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -18,6 +22,88 @@ function icms_bundle_people_logic_install() {
 
   // Import default bundle texts on module installation.
   icms_bundle_people_logic_import_default_texts();
+}
+
+/**
+ * Add the sorting option to people listings (ICMS-584).
+ */
+function icms_bundle_people_logic_update_11002() {
+  $messages = [];
+
+  // Field storage for the sorting option.
+  if (!FieldStorageConfig::loadByName('paragraph', 'field_icms_sorting')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_icms_sorting',
+      'entity_type' => 'paragraph',
+      'type' => 'list_string',
+      'settings' => [
+        'allowed_values' => [
+          'default' => 'Default (newest first)',
+          'alphabetical' => 'Alphabetical (A-Z)',
+          'weight' => 'Weight',
+        ],
+        'allowed_values_function' => '',
+      ],
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ])->save();
+    $messages[] = 'Created field_icms_sorting storage.';
+  }
+
+  // Field instance on the people listing paragraph.
+  if (!FieldConfig::loadByName('paragraph', 'icms_layout_people', 'field_icms_sorting')) {
+    FieldConfig::create([
+      'field_name' => 'field_icms_sorting',
+      'entity_type' => 'paragraph',
+      'bundle' => 'icms_layout_people',
+      'label' => 'Sorting',
+      'description' => '<strong>Default:</strong> Sorted by weight, then newest first (publication date).<br /><strong>Alphabetical:</strong> Sorted by last name (A-Z).<br /><strong>Weight:</strong> Sorted by the sort order field only; higher values are shown first.',
+      'required' => TRUE,
+      'default_value' => [['value' => 'default']],
+    ])->save();
+    $messages[] = 'Created field_icms_sorting on icms_layout_people.';
+  }
+
+  // Show the field on the form.
+  $form_display = EntityFormDisplay::load('paragraph.icms_layout_people.default');
+  if ($form_display && !$form_display->getComponent('field_icms_sorting')) {
+    $form_display->setComponent('field_icms_sorting', [
+      'type' => 'options_select',
+      'weight' => 13,
+      'region' => 'content',
+    ])->save();
+    $messages[] = 'Added field_icms_sorting to the form display.';
+  }
+
+  // Expose the field in the GraphQL schema.
+  $graphql = \Drupal::configFactory()->getEditable('graphql.graphql_servers.graphql');
+  if (!$graphql->isNew() && !$graphql->get('schema_configuration.core_composable.fields.paragraph.field_icms_sorting')) {
+    $graphql->set('schema_configuration.core_composable.fields.paragraph.field_icms_sorting', 'field_icms_sorting')->save();
+    $messages[] = 'Enabled field_icms_sorting in the GraphQL schema.';
+  }
+
+  // Index the last name so listings can sort alphabetically.
+  $index_config = \Drupal::configFactory()->getEditable('search_api.index.content_search');
+  if (!$index_config->isNew() && !$index_config->get('field_settings.lastname')) {
+    $index_config->set('field_settings.lastname', [
+      'label' => 'Last name',
+      'datasource_id' => 'entity:node',
+      'property_path' => 'field_icms_people_lastname',
+      'type' => 'string',
+      'dependencies' => [
+        'config' => ['field.storage.node.field_icms_people_lastname'],
+      ],
+    ])->save();
+    $messages[] = 'Added lastname to the content_search index.';
+
+    $index = \Drupal::entityTypeManager()->getStorage('search_api_index')->load('content_search');
+    if ($index) {
+      $index->reindex();
+      $messages[] = 'Queued content_search for reindexing.';
+    }
+  }
+
+  return (string) new TranslatableMarkup(implode(' ', $messages) ?: 'Nothing to do.');
 }
 
 /**
