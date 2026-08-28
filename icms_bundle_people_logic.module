@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Runtime hooks for the ICMS People bundle.
+ */
+
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\simple_sitemap\Exception\SkipElementException;
+
+/**
+ * Implements hook_simple_sitemap_entity_process().
+ */
+function icms_bundle_people_logic_simple_sitemap_entity_process(ContentEntityInterface $entity): void {
+  // "Listed only" people are not reachable via direct link, so their URLs
+  // must not be advertised in the sitemap either.
+  if (
+    $entity->getEntityTypeId() === 'node'
+    && $entity->bundle() === 'icms_people'
+    && $entity->hasField('field_icms_listed_only')
+    && (bool) $entity->get('field_icms_listed_only')->value
+  ) {
+    throw new SkipElementException();
+  }
+}

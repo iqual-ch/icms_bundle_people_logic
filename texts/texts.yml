@@ -12,3 +12,10 @@ email_label:
     de: E-Mail
     fr: E-mail
     it: E-mail
+listed_only_notice:
+  context: bundle_people
+  default:
+    en: 'This page is only visible to editors because "Listed only" is enabled.'
+    de: 'Diese Seite ist nur für Redaktor:innen sichtbar, da «Nur in Auflistung» aktiviert ist.'
+    fr: 'Cette page n''est visible que par les rédacteurs, car « Uniquement listé » est activé.'
+    it: 'Questa pagina è visibile solo ai redattori perché «Solo in elenco» è attivato.'
