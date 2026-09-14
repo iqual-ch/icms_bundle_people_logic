@@ -103,7 +103,7 @@ function icms_bundle_people_logic_update_11002() {
     }
   }
 
-  return (string) new TranslatableMarkup(implode(' ', $messages) ?: 'Nothing to do.');
+  return implode(' ', $messages) ?: (string) new TranslatableMarkup('Nothing to do.');
 }
 
 /**
