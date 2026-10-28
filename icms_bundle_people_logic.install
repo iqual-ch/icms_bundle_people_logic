@@ -29,38 +29,47 @@ function icms_bundle_people_logic_install() {
  */
 function icms_bundle_people_logic_update_11002() {
   $messages = [];
+  // Fields the project exports are created from the export, keeping their
+  // UUIDs (ICMS-816). The service comes with icms_core_logic, which this
+  // module does not depend on.
+  /** @var \Drupal\icms_core_logic\UpdateConfigInstaller|null $installer */
+  $installer = \Drupal::hasService('icms_core_logic.update_config_installer') ? \Drupal::service('icms_core_logic.update_config_installer') : NULL;
 
   // Field storage for the sorting option.
   if (!FieldStorageConfig::loadByName('paragraph', 'field_icms_sorting')) {
-    FieldStorageConfig::create([
-      'field_name' => 'field_icms_sorting',
-      'entity_type' => 'paragraph',
-      'type' => 'list_string',
-      'settings' => [
-        'allowed_values' => [
-          'default' => 'Default (newest first)',
-          'alphabetical' => 'Alphabetical (A-Z)',
-          'weight' => 'Weight',
+    if (!$installer?->importConfigEntity('field.storage.paragraph.field_icms_sorting')) {
+      FieldStorageConfig::create([
+        'field_name' => 'field_icms_sorting',
+        'entity_type' => 'paragraph',
+        'type' => 'list_string',
+        'settings' => [
+          'allowed_values' => [
+            'default' => 'Default (newest first)',
+            'alphabetical' => 'Alphabetical (A-Z)',
+            'weight' => 'Weight',
+          ],
+          'allowed_values_function' => '',
         ],
-        'allowed_values_function' => '',
-      ],
-      'cardinality' => 1,
-      'translatable' => FALSE,
-    ])->save();
+        'cardinality' => 1,
+        'translatable' => FALSE,
+      ])->save();
+    }
     $messages[] = 'Created field_icms_sorting storage.';
   }
 
   // Field instance on the people listing paragraph.
   if (!FieldConfig::loadByName('paragraph', 'icms_layout_people', 'field_icms_sorting')) {
-    FieldConfig::create([
-      'field_name' => 'field_icms_sorting',
-      'entity_type' => 'paragraph',
-      'bundle' => 'icms_layout_people',
-      'label' => 'Sorting',
-      'description' => '<strong>Default:</strong> Sorted by weight, then newest first (publication date).<br /><strong>Alphabetical:</strong> Sorted by last name (A-Z).<br /><strong>Weight:</strong> Sorted by the sort order field only; higher values are shown first.',
-      'required' => TRUE,
-      'default_value' => [['value' => 'default']],
-    ])->save();
+    if (!$installer?->importConfigEntity('field.field.paragraph.icms_layout_people.field_icms_sorting')) {
+      FieldConfig::create([
+        'field_name' => 'field_icms_sorting',
+        'entity_type' => 'paragraph',
+        'bundle' => 'icms_layout_people',
+        'label' => 'Sorting',
+        'description' => '<strong>Default:</strong> Sorted by weight, then newest first (publication date).<br /><strong>Alphabetical:</strong> Sorted by last name (A-Z).<br /><strong>Weight:</strong> Sorted by the sort order field only; higher values are shown first.',
+        'required' => TRUE,
+        'default_value' => [['value' => 'default']],
+      ])->save();
+    }
     $messages[] = 'Created field_icms_sorting on icms_layout_people.';
   }
 
