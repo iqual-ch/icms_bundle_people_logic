@@ -5,7 +5,6 @@
  * Update hooks for ICMS People bundle.
  */
 
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -73,8 +72,10 @@ function icms_bundle_people_logic_update_11002() {
     $messages[] = 'Created field_icms_sorting on icms_layout_people.';
   }
 
-  // Show the field on the form.
-  $form_display = EntityFormDisplay::load('paragraph.icms_layout_people.default');
+  // Show the field on the form. Loaded without translations: in drush, load()
+  // applies the default language's config translation, and saving that writes
+  // it into the base config (ICMS-839).
+  $form_display = \Drupal::entityTypeManager()->getStorage('entity_form_display')->loadOverrideFree('paragraph.icms_layout_people.default');
   if ($form_display && !$form_display->getComponent('field_icms_sorting')) {
     $form_display->setComponent('field_icms_sorting', [
       'type' => 'options_select',
