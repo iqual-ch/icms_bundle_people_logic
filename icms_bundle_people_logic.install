@@ -145,7 +145,7 @@ function icms_bundle_people_logic_import_default_texts(): void {
 
     /** @var \Drupal\texts_sync\TextsSyncService $texts_sync */
     $texts_sync = \Drupal::service('texts_sync.service');
-    $stats = $texts_sync->import($data, NULL, TRUE);
+    $stats = $texts_sync->import($data, NULL, FALSE);
 
     \Drupal::logger($module_name)->notice('Imported default texts during install. Created: @created, Updated: @updated, Skipped: @skipped.', [
       '@created' => (int) ($stats['created'] ?? 0),
